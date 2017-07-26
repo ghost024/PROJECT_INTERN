@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <!-- Title changes when table is constructed -->
+    <title id="dynamic">Login</title>
+
+
+    <!-- Styling/CSS reference files -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+
+    <!-- Javascript sources -->
+    <script src="jquery-3.2.1.min.js"></script>
+    <script src="Base64.js"></script>
+    <script src="boredPanda.js"></script>
+    <script src="md5.js"></script>
+
+
+</head>
+
+
+
+
+
+<body>
+
+
+
+
+<div id ='LoginField'>
+
+    <div class="logo">
+
+        <input type="image" src="images/att_logo.png" align="right" style="width:auto;max-width:400px">
+
+    </div>
+
+    <h1 id="pageStatus">LOGIN</h1>
+
+    <form action="javascript:selectService()" method="POST">
+
+        Username:<br>
+
+        <input id="user" type="text"><br>
+
+        Password:<br>
+
+        <input id="pass" type="password"><br><br>
+
+        <input class='button' type="submit" name="login" value="LOGIN"><br>
+
+    </form>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,154 @@
+#refresh {
+    text-align: Left;
+    font-weight: Bold;
+}
+
+#uploadPar {
+    font-weight: bolder;
+}
+
+#fileList {
+
+    padding: 5px;
+    width: 1042px;
+    background-color: white;
+    border-collapse: collapse;
+}
+
+thead {
+    display: inline-block;
+    width: 1042px;
+}
+
+tbody {
+    display: inline-block;
+    width: 1042px;
+    height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.button2 {
+    background-color: #0c2577;
+    font-size: 12px;
+    color: white;
+    padding: 10px 24px;
+    transition-duration: 0.4s;
+    text-align: right;
+    margin-inline-start: 713px;
+    -webkit-margin-start: 713px;
+}
+.button {
+    background-color: #0c2577;
+    font-size: 12px;
+    color: white;
+    padding: 10px 24px;
+    transition-duration: 0.4s;
+}
+
+.button:hover, .button2:hover {
+    background-color: #44c8f5;
+}
+
+
+
+table, th, tr, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    background-color: white;
+    padding: 7px;
+}
+
+th {
+    width: 100%;
+
+    font-weight: bold;
+    color: White;
+    background-color: #0c2577;
+
+
+
+}
+
+
+
+#LoginField {
+    margin: auto;
+    width: 85%;
+    border: 3px solid black;
+    border-collapse: separate;
+    Padding: 15px;
+    background-color: #44c8f5;
+
+
+}
+
+
+
+.login_out {
+    border: 2px solid black;
+    border-collapse: separate;
+    background-image: url(/images/att_logo.png);
+    text-align: right;
+    width: auto;
+    margin: auto;
+    height: auto;
+    padding: 20px;
+    font-weight: bold;
+
+
+}
+
+body{
+    background-color: #f2f2f2;
+}
+
+
+/*table, td, tr {
+
+}*/
+.header {
+
+    text-align: center;
+}
+.UserInfo {
+
+    text-align: right;
+    color: black;
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+
+
+
+.column1 {
+
+    text-align: center;
+    width:75px;
+
+}
+
+.column2 {
+    width:500px;
+
+}
+
+.column3 {
+    width:350px;
+
+}
+
+.column4 {
+    width:100px;
+}
+
+.logo {
+    float: right;
+}
+
