@@ -1,16 +1,22 @@
 // Gloabl variable
 
-var val, x, table, table2;
+var val, x, table, table2, bucket;
 
 
 
 // Functions -----------------
+function tableSorting() {
+    document.getElementById('bucket').innerHTML = bucket + ": " + document.getElementById('link4href') ;
+    console.log(table2)
+}
+
 function constructTable(val, x, fileSize){
 
     url = sessionStorage.getItem("URL");
     link = url + val;
+    if(val.indexOf('/') !== -1){link = "javascript:tableSorting()"}
     table += "<tr><td class ='column1'><input type='checkbox' id='file[" + n + "]' name='" + val + "' value='" + link + "'" + "/>&nbsp;"
-        + "</td><td class='column2'><a href='" + link + "' download>" + val
+        + "</td><td class='column2'><a id='link4href' href='" + link + "' download>" + val
         + "</td><td class='column3'>" + x[n].getElementsByTagName("LastModified")[0].childNodes[0].nodeValue
         + "</td><td class='column4'>" + fileSize + "</td></tr>";
 
@@ -124,15 +130,15 @@ function deletefxn() {
         text += '</Delete>';
         var filehash = md5(text, null, true);
         console.log(filehash);
-        //binHash = ConvertBase.hex2bin(filehash);
-        //console.log(binHash);
         var basehash = btoa(filehash);
         console.log(basehash);
     console.log(selectDelete);
-    alert(text);
     xhr = createCORSRequest("POST", url+'?delete=');
     xhr.setRequestHeader('Content-MD5', basehash);
-    xhr.send(text)
+    xhr.send(text);
+    delay = 1500;
+    setTimeout(makeCorsRequest, delay)
+
 }
 
 
@@ -251,22 +257,23 @@ function makeCorsRequest() {
     // Response handlers
     xhr.onload = function () {
         var xmlDoc = new DOMParser().parseFromString(xhr.responseText, 'text/xml');
-
+        bucket = xmlDoc.getElementsByTagName('Name')[0].childNodes[0].nodeValue;
         x = xmlDoc.getElementsByTagName("Contents");
 
         // Creates div for username/logout button
         var title = "<div id='loggingOut' class='login_out'><p class='UserInfo' id='username'>You are currently logged in as: " +  sessionStorage.getItem('USER')  + "<br><br><input class='button' type='button' id='logout' value='LOGOUT' onclick='logout()'></p></div>";
 
         // Gets bucket name
-        var logInOut = "<h1 class = 'header'>" + xmlDoc.getElementsByTagName('Name')[0].childNodes[0].nodeValue + "</h1>";
+        var logInOut = "<h1 id='bucket' class = 'header'>" + bucket + "</h1>";
 
         // Refresh button and Refresh File list
         var refresh = "<p id='numfiles'></p>" + "<div id='refreshButton'><input class='button' align='left' type='button' onclick='makeCorsRequest()' value='REFRESH FILE LIST'><input type='button' align='right' id='createDir' value='Create New Directory' onclick='createDirectory()' class='button2'> <br><br></div>";
 
         // Initiates table and table head
         var tableheader = "<table id='fileList'><div id='thead_body'><thead><div id='tableRows>'><tr><th class='column1'>Select File</th><th class='column2'>" + "File</th><th class='column3'>Last Modified</th><th class='column4'>Size</th></tr></thead><tbody><div id='rowsData'";
-        loadedarray = [];
+        loadedtable = [];
         hiddenarray = [];
+        directories = [];
         table2 = "";
         // Constructs table rows
         for (n = 0; n < x.length; n++) {
@@ -282,23 +289,23 @@ function makeCorsRequest() {
             //console.log(slashFind);
 
             if(slashFind + 1 === length || slashFind === -1){
-                loadedarray.push('file['+n+']');
-                if (slashFind + 1 === length) {
 
-                    Directory = val.substring(0, slashFind);
-                    val = "Directory: " + Directory;
-                    constructTable(val, x, fileSize)
+                if (slashFind + 1 === length) {
+                   // loadedtable.splice(n,1);
+                    constructTable(val, x, fileSize);
+                    directories.push('file['+n+']');
 
                     //console.log(document.getElementById('file['+n+']').outerHTML);
                 }
 
                 else if(slashFind === -1){
+                    loadedtable.push('file['+n+']');
                     constructTable(val, x, fileSize)
                 }
             }
 
             else if(slashFind !== -1 || slashFind +1 !== length) {
-                hiddenarray.push('file['+n+']');
+                hiddenarray.push(val);
                 table2 += "<tr><td class ='column1'><input type='checkbox' id='file[" + n + "]' name='" + val + "' value='" + link + "'" + "/>&nbsp;"
                     + "</td><td class='column2'><a href='" + link + "' download>" + val
                     + "</td><td class='column3'>" + x[n].getElementsByTagName("LastModified")[0].childNodes[0].nodeValue
@@ -311,9 +318,10 @@ function makeCorsRequest() {
 
         }
 
-        sessionStorage.setItem('NoSubDir', JSON.stringify(loadedarray));
-        console.log(loadedarray);
+        sessionStorage.setItem('NoSubDir', JSON.stringify(loadedtable));
+        console.log(loadedtable);
         console.log(hiddenarray);
+        console.log(directories);
         // Close table data assignments
         table = tableheader + table + "</div></tbody></div></table><br>";
 
@@ -332,7 +340,9 @@ function makeCorsRequest() {
         document.getElementById("LoginField").innerHTML =  title + logInOut + refresh + table + delet + upload + footer;
         document.getElementById('dynamic').innerHTML = "Files";
         document.getElementById('numfiles').innerHTML = "Number of Files: " + x.length;
-        for (n=0;n<hiddenarray.length;n++){
+
+        for (n=0;n<directories.length;n++){
+            document.getElementById(directories[n]).outerHTML = '<image src="images/folderIcon.png" id="file['+n+']" width="23" height="19">';
 
         }
 
