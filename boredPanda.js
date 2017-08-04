@@ -1,23 +1,45 @@
 // Gloabl variable
 
-var i, x, table, table2, loadedarray;
+var val, x, table, table2, bucket, title, logInOut, refresh, delet, upload, footer, tableheader;
 
 
 
 // Functions -----------------
+function tableSorting(val) {
+    table2 = "";
+    for(r=0;r<hiddenarray.length;r++){
+
+        if(hiddenarray[r].indexOf(val) !== -1){
+            table2 += "<tr><td class ='column1'><input type='checkbox' id='file[" + n + "]' name='" + val + "' value='" + link + "'" + "/>&nbsp;"
+                + "</td><td class='column2'><a href='" + link + "' download>" + val
+                + "</td><td class='column3'>" + x[n].getElementsByTagName("LastModified")[0].childNodes[0].nodeValue
+                + "</td><td class='column4'>" + x[n].getElementsByTagName("Size")[0].childNodes[0].nodeValue + "</td></tr>";
+
+
+
+        }
+    }
+    table = tableheader + table2;
+    document.getElementById('LoginField').innerHTML = title + logInOut + refresh + table + delet + upload + footer;
+    document.getElementById('bucket').innerHTML = bucket + ": " + val;
+}
+
 function constructTable(val, x, fileSize){
 
     url = sessionStorage.getItem("URL");
     link = url + val;
-    table += "<tr><td class ='column1'><input type='checkbox' id='file[" + i + "]' name='" + val + "' value='" + link + "'" + "/>&nbsp;"
-        + "</td><td class='column2'><a href='" + link + "' download>" + val
-        + "</td><td class='column3'>" + x[i].getElementsByTagName("LastModified")[0].childNodes[0].nodeValue
+    if(val.indexOf('/') !== -1){
+        val = val.slice(0, -1);
+        link = 'javascript:tableSorting("'+val+'")'}
+    table += "<tr><td class ='column1'><input type='checkbox' id='file[" + n + "]' name='" + val + "' value='" + link + "'" + "/>&nbsp;"
+        + "</td><td class='column2'><a id='link4href["+n+"]' href='" + link + "' download>" + val + "</a>"
+        + "</td><td class='column3'>" + x[n].getElementsByTagName("LastModified")[0].childNodes[0].nodeValue
         + "</td><td class='column4'>" + fileSize + "</td></tr>";
 
 
 }
 function createDirectory() {
-    table = "";
+
     url = sessionStorage.getItem("URL");
 
     // Calls function to create CORS Request header, then callback
@@ -99,26 +121,40 @@ function logout() {
 
 // Delete Function
 function deletefxn() {
+
+    url = sessionStorage.getItem("URL");
+    var selectDelete = [];
+    var loadedtable = JSON.parse(sessionStorage.getItem('NoSubDir'));
+    console.log(loadedtable);
     text =  '<?xml version="1.0" encoding="UTF-8"?>' +
             '<Delete>' +
             '<Quiet>true</Quiet>';
 
-        for(z=1;z<i;z++) {
-            console.log(i);
+    for(z=0;z<loadedtable.length;z++) {
 
-            if (document.getElementById('file[' + z + ']').checked === true) {
-                console.log(z);
-                text += '<Object>' +
-                    '<key>' + x[z].getElementsByTagName("Key")[0].childNodes[0].nodeValue + '</key>' +
+        if (document.getElementById(loadedtable[z]).checked === true) {
+            selectDelete.push(loadedtable[z]);
+            text += '<Object>' +
+                    '<Key>' + document.getElementById(loadedtable[z]).name + '</Key>' +
                     '</Object>'
             }
-            else if (document.getElementById('file[' + z + ']').checked !== true){
+        else if (document.getElementById(loadedtable[z]).checked !== true){
                 console.log(z + " is hidden")
             }
-            else console.log('not ' + z)
+        else console.log('not ' + z)
         }
         text += '</Delete>';
-    alert(text)
+        var filehash = md5(text, null, true);
+        console.log(filehash);
+        var basehash = btoa(filehash);
+        console.log(basehash);
+    console.log(selectDelete);
+    xhr = createCORSRequest("POST", url+'?delete=');
+    xhr.setRequestHeader('Content-MD5', basehash);
+    xhr.send(text);
+    delay = 1500;
+    setTimeout(makeCorsRequest, delay)
+
 }
 
 
@@ -220,6 +256,7 @@ function createCORSRequest(method, url) {
 // Make the actual CORS request to Get list
 function makeCorsRequest() {
     table = "";
+    table2 = "";
 
     // URL for session
     url = sessionStorage.getItem("URL");
@@ -236,77 +273,97 @@ function makeCorsRequest() {
     // Response handlers
     xhr.onload = function () {
         var xmlDoc = new DOMParser().parseFromString(xhr.responseText, 'text/xml');
-
+        bucket = xmlDoc.getElementsByTagName('Name')[0].childNodes[0].nodeValue;
         x = xmlDoc.getElementsByTagName("Contents");
 
         // Creates div for username/logout button
-        var title = "<div id='loggingOut' class='login_out'><p class='UserInfo' id='username'>You are currently logged in as: " +  sessionStorage.getItem('USER')  + "<br><br><input class='button' type='button' id='logout' value='LOGOUT' onclick='logout()'></p></div>";
+        title = "<div id='loggingOut' class='login_out'><p class='UserInfo' id='username'>You are currently logged in as: " +  sessionStorage.getItem('USER')  + "<br><br><input class='button' type='button' id='logout' value='LOGOUT' onclick='logout()'></p></div>";
 
         // Gets bucket name
-        var logInOut = "<h1 class = 'header'>" + xmlDoc.getElementsByTagName('Name')[0].childNodes[0].nodeValue + "</h1>";
+        logInOut = "<h1 id='bucket' class = 'header'>" + bucket + "</h1>";
 
         // Refresh button and Refresh File list
-        var refresh = "<p id='numfiles'></p>" + "<div id='refreshButton'><input class='button' align='left' type='button' onclick='makeCorsRequest()' value='REFRESH FILE LIST'><input type='button' align='right' id='createDir' value='Create New Directory' onclick='createDirectory()' class='button2'> <br><br></div>";
+        refresh = "<p id='numfiles'></p>" + "<div id='refreshButton'><input class='button' align='left' type='button' onclick='makeCorsRequest()' value='REFRESH FILE LIST'><input type='button' align='right' id='createDir' value='Create New Directory' onclick='createDirectory()' class='button2'> <br><br></div>";
 
         // Initiates table and table head
-        var tableheader = "<table id='fileList'><div id='thead_body'><thead><div id='tableRows>'><tr><th class='column1'>Select File</th><th class='column2'>" + "File</th><th class='column3'>Last Modified</th><th class='column4'>Size</th></tr></thead><tbody><div id='rowsData'";
-
+        tableheader = "<table id='fileList'><div id='thead_body'><thead><div id='tableRows>'><tr><th class='column1'>Select File</th><th class='column2'>" + "File</th><th class='column3'>Last Modified</th><th class='column4'>Size</th></tr></thead><tbody><div id='rowsData'";
+        loadedtable = [];
+        hiddenarray = [];
+        directories = [];
+        dirNames = [];
+        table2 = "";
         // Constructs table rows
-        for (i = 0; i < x.length; i++) {
+        for (n = 0; n < x.length; n++) {
 
             // filename to add as extension to url for put
-            var val = x[i].getElementsByTagName("Key")[0].childNodes[0].nodeValue;
+            val = x[n].getElementsByTagName("Key")[0].childNodes[0].nodeValue;
             var length = val.length;
-            var fileSize = x[i].getElementsByTagName("Size")[0].childNodes[0].nodeValue;
+            var fileSize = x[n].getElementsByTagName("Size")[0].childNodes[0].nodeValue;
             var link = url + val;
-            loadedarray = [];
+
             slashFind = val.indexOf("/");
-            console.log(length);
-            console.log(slashFind);
+            //console.log(length);
+            //console.log(slashFind);
 
             if(slashFind + 1 === length || slashFind === -1){
-                loadedarray.push('file['+i+']');
-                if (slashFind + 1 === length) {
 
-                    Directory = val.substring(0, slashFind);
-                    val = "Directory: " + Directory;
-                    constructTable(val, x, fileSize)
+                if (slashFind + 1 === length) {
+                   // loadedtable.splice(n,1);
+                    constructTable(val, x, fileSize);
+                    directories.push('file['+n+']');
+                    dirNames.push(val);
+
+                    //console.log(document.getElementById('file['+n+']').outerHTML);
                 }
 
                 else if(slashFind === -1){
+                    loadedtable.push('file['+n+']');
                     constructTable(val, x, fileSize)
                 }
             }
 
             else if(slashFind !== -1 || slashFind +1 !== length) {
-                table2 += "<tr><td class ='column1'><input type='checkbox' id='file[" + i + "]' name='" + val + "' value='" + link + "'" + "/>&nbsp;"
+                hiddenarray.push(val);
+                table2 += "<tr><td class ='column1'><input type='checkbox' id='file[" + n + "]' name='" + val + "' value='" + link + "'" + "/>&nbsp;"
                     + "</td><td class='column2'><a href='" + link + "' download>" + val
-                    + "</td><td class='column3'>" + x[i].getElementsByTagName("LastModified")[0].childNodes[0].nodeValue
+                    + "</td><td class='column3'>" + x[n].getElementsByTagName("LastModified")[0].childNodes[0].nodeValue
                     + "</td><td class='column4'>" + fileSize + "</td></tr>";
                 console.log(table2);
             }
 
-            else alert("errrororaororor")
+            else alert("errrororaororor");
+
+
         }
-        console.log(loadedarray);
+
+        sessionStorage.setItem('NoSubDir', JSON.stringify(loadedtable));
+        console.log(loadedtable);
+        console.log(hiddenarray);
+        console.log(directories);
+        console.log(dirNames);
         // Close table data assignments
         table = tableheader + table + "</div></tbody></div></table><br>";
 
         // Delete Button and paragraph "select files to upload"
-        var delet = "<input class='button' type='button' id='delete' onclick='deletefxn()' value='DELETE SELECTED FILES'><br><br><br><p id='uploadPar'>SELECT FILES TO UPLOAD:</p>";
+        delet = "<input class='button' type='button' id='delete' onclick='deletefxn()' value='DELETE SELECTED FILES'><br><br><br><p id='uploadPar'>SELECT FILES TO UPLOAD:</p>";
 
         // upload form and upload files button
-        var upload = "<form enctype='multipart/form-data' name='uploadform' id='uploadform' method='POST' action='javascript:putRequest()'>"
+        upload = "<form enctype='multipart/form-data' name='uploadform' id='uploadform' method='POST' action='javascript:putRequest()'>"
             + "<input type='file' id='fileUpload[]' name='fileUpload[]' value='Browse...' multiple><br><br>"
             + "<input class = 'button' type='submit' name='submit' id='submit' value='UPLOAD FILES'><br><br></form>";
 
         // Personalized footer
-        var footer = "<br><br><br><br><p>This page was constructed for use by AT&T Foundry and affiliates. Do not use for any purpose other than intended. JD IRWIN, Intern AT&T Foundry</p><br><br><br>";
+        footer = "<br><br><br><br><p>This page was constructed for use by AT&T Foundry and affiliates. Do not use for any purpose other than intended. JD IRWIN, Intern AT&T Foundry</p><br><br><br>";
 
         // Replaces LoginField innerHTML with new data
         document.getElementById("LoginField").innerHTML =  title + logInOut + refresh + table + delet + upload + footer;
         document.getElementById('dynamic').innerHTML = "Files";
         document.getElementById('numfiles').innerHTML = "Number of Files: " + x.length;
+
+        for (n=0;n<directories.length;n++){
+            document.getElementById(directories[n]).outerHTML = '<image src="images/folderIcon.png" id="file['+n+']" width="23" height="19">';
+
+        }
 
     };
     // Error Function
